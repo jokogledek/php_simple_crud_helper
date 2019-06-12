@@ -9,7 +9,7 @@
  */
 
 define('_DBHOST', '10.10.10.10');
-define('_DB', 'sample_db');
+define('_DB', 'db_name');
 define('_UNAME', 'db_uname');
 define('_PASS', 'db_pass');
 
@@ -345,6 +345,7 @@ class dbaseTools {
 
                 $result = $this->statement->execute($pr);
 //                $rowCount = $this->statement->rowCount();
+
                 try{
                     $result = $this->statement->fetchAll(PDO::FETCH_OBJ);
                 }catch(PDOException $s){
@@ -585,67 +586,85 @@ class dbaseTools {
         return $this->executeQuery();
     }
 
-    public function generateFewModel($rawTable = array()) {
-//        $rawData = $rawTable;
-        foreach ($rawTable as $rd) {
-            // echo $rd."<br/>";
-            $tableName = $rd;
+    public function generateClassFromTableName($tbName = "", $outputPath = "classes"){
+
+        if (!empty($outputPath) && !file_exists($outputPath)) {
+            mkdir($outputPath, 0777, true);
+        }
+
+        if(!empty($tbName)) {
+            $tableName = $tbName;
             $query = "desc $tableName";
             $this->statement = $this->_connection->prepare($query);
             $rawObject = $this->executeQuery();
-            //generate object structure
-            $className = $this->generateClassName($tableName);
-            //generate class content
-            // echo "query $query<br/>";
-            // echo "<pre>";
-            // print_r($rawObject);
-            // echo "</pre>";
-            $rawText = "<?php\n";
-//            $rawText .= 'require_once "../dbaseTools.php";';
-            $rawText .= "\n\n\nclass $className {\n";
-            foreach ($rawObject as $ro) {
-                $columnName = $ro->Field;
-                $varName = $this->generateClassName($columnName);
-                $rawText .= "\n\tpublic $$varName;";
+            if(count($rawObject) > 0 && $rawObject != "") {
+                $className = $this->generateClassName($tableName);
+                $rawText = "<?php\n";
+                $rawText .= "/**\n* auto generate class name $className\n* from table $tableName\n* db helper class generator - by M Azwar Nurrosat\n*/";
+                $rawText .= "\nclass $className {\n";
+                foreach ($rawObject as $ro) {
+                    $columnName = $ro->Field;
+                    $varName = $this->generateClassName($columnName);
+                    $rawText .= "\n\tpublic $$varName;";
+                }
+
+                //generate constructor
+                $rawText .= "\n\tpublic function __construct() {";
+                $rawText .= "\n";
+                $rawText .= "\n\t}";
+                //generate insert query
+                $rawText .= "\n\tpublic function insert(){";
+                $rawText .= "\n\t\t" . '$tool = new dbaseTools();';
+
+                foreach ($rawObject as $ro) {
+                    $columnName = $ro->Field;
+                    $varName = $this->generateClassName($columnName);
+                    $rawText .= "\n\t\t" . '$data["' . $columnName . '"] = $this->' . $varName . ';';
+                }
+                $rawText .= "\n\t\t" . 'return $tool->insert("' . $tableName . ', $data");';
+                $rawText .= "\n\t}";
+                //generate update query
+                $rawText .= "\n\tpublic function update(){";
+                $rawText .= "\n\t\treturn false;";
+                $rawText .= "\n\t}";
+                //generate delete query
+                $rawText .= "\n\tpublic function delete(){";
+                $rawText .= "\n\t\treturn false;";
+                $rawText .= "\n\t}";
+                //generate select query
+                $rawText .= "\n\tpublic function select(){";
+                $rawText .= "\n\t\treturn false;";
+                $rawText .= "\n\t}";
+                $rawText .= "\n";
+                $rawText .= "\n}";
+
+
+                $file = "$outputPath/$className.php";
+                $fh = fopen($file, 'w');
+                fwrite($fh, $rawText);
+                fclose($fh);
+                echo "generate $file \tfrom table $tableName\n";
+            }else{
+                echo "table name  $tableName not found ...\n";
             }
-
-            //generate constructor
-            $rawText .= "\n\tpublic function __construct() {";
-            $rawText .= "\n";
-            $rawText .= "\n\t}";
-            //generate insert query
-            $rawText .= "\n\tpublic function insert(){";
-            $rawText .= "\n\t\t" . '$tool = new dbaseTools();';
-
-            foreach ($rawObject as $ro) {
-                $columnName = $ro->Field;
-                $varName = $this->generateClassName($columnName);
-                $rawText .= "\n\t\t" . '$data["' . $columnName . '"] = $this->' . $varName . ';';
-            }
-            $rawText .= "\n\t\t" . 'return $tool->insert("' . $tableName . ', $data");';
-            $rawText .= "\n\t}";
-            //generate update query
-            $rawText .= "\n\tpublic function update(){";
-            $rawText .= "\n\t\treturn false;";
-            $rawText .= "\n\t}";
-            //generate delete query
-            $rawText .= "\n\tpublic function delete(){";
-            $rawText .= "\n\t\treturn false;";
-            $rawText .= "\n\t}";
-            //generate select query
-            $rawText .= "\n\tpublic function select(){";
-            $rawText .= "\n\t\treturn false;";
-            $rawText .= "\n\t}";
-            $rawText .= "\n";
-            $rawText .= "\n}";
-
-            $file = "models/$className.php";
-            $fh = fopen($file, 'w');
-            fwrite($fh, $rawText);
-            fclose($fh);
-//            // echo "generate $file<br/>";
         }
-        return "oke";
+
+    }
+
+    public function generateClassFromTables($tableNameList = [], $outputPath = "classes") {
+
+        foreach ($tableNameList as $rd) {
+            $this->generateClassFromTableName($rd, $outputPath);
+        }
+        return "done";
+    }
+
+    public function generateClassFromAllTable($outputPath = "classes") {
+        $res = $this->fetchTable();
+        foreach($res as $rs){
+            $this->generateClassFromTableName($rs->table_name, $outputPath);
+        }
+        return "done";
     }
 
     public function getUID() {

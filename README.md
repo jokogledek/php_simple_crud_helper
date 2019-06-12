@@ -39,3 +39,23 @@ $param   = array("id"=>2, "status"=>0);
 $tool->query($query, $param);
 ```
 
+### generate php classes from table
+generate classes from all existing tables
+```
+$tools = new dbaseTools();
+$tools->generateClassFromAllTable("models");
+```
+
+generate classes from single table
+```
+$tools = new dbaseTools();
+$tools->generateClassFromTableName("t_white_list", "models");
+```
+
+generate classes from table in array
+```
+$tools = new dbaseTools();
+$listTables = ["t_white_list", "t_user_kasir"];
+$tools->generateClassFromTables($listTables, "models");
+```
+
