@@ -2,7 +2,7 @@
 ___
 Simple mysql database crud helper
 
-###insert
+### insert
 Insert data into table
 ```
 $tool                = new dbaseTools();
@@ -12,7 +12,7 @@ $data["pass"]        = "nothing";
 $tool->insert("user_table", $data);
 ```
 
-###update by PK
+### update by PK
 Update table by primary key 
 ```
 $tool                = new dbaseTools();
@@ -22,7 +22,7 @@ $data["pass"]        = "new_pas";
 $tool->updateByPK("user_table", $data, $id);
 ```
 
-###delete by PK
+### delete by PK
 Delete row by primary key 
 ```
 $tool    = new dbaseTools();
@@ -30,7 +30,7 @@ $id      = 'user01';
 $tool->deleteByPK("user_table", $id);
 ```
 
-###query
+### query
 regular mysql query with where clause
 ```
 $tool    = new dbaseTools();
