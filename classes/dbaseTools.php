@@ -8,7 +8,12 @@
  *
  */
 
-error_reporting(0);
+define('_DBHOST', '10.10.10.10');
+define('_DB', 'sample_db');
+define('_UNAME', 'db_uname');
+define('_PASS', 'db_pass');
+
+error_reporting(E_ALL);
 
 class dbaseTools {
 
