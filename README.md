@@ -49,13 +49,13 @@ $tools->generateClassFromAllTable("models");
 generate classes from single table
 ```
 $tools = new dbaseTools();
-$tools->generateClassFromTableName("t_white_list", "models");
+$tools->generateClassFromTableName("t_user_login", "models");
 ```
 
 generate classes from table in array
 ```
 $tools = new dbaseTools();
-$listTables = ["t_white_list", "t_user_kasir"];
+$listTables = ["t_user_login", "t_user_history"];
 $tools->generateClassFromTables($listTables, "models");
 ```
 
